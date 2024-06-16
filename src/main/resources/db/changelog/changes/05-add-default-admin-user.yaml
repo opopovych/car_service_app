@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-default-admin-user
+      author: opopovich
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: email
+                  value: "customer@gmail.com"
+              - column:
+                  name: password
+                  value: "$2a$10$Aeu2TDpdILczq7cBs24wq.LJOccxKTr5q71SLe02K8NFob/mS4.nq"
+              - column:
+                  name: first_name
+                  value: "Oleh"
+              - column:
+                  name: last_name
+                  value: "Popovich"
+        - insert:
+            tableName: users_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: (SELECT id FROM users WHERE email = 'customer@gmail.com')
+              - column:
+                  name: role_id
+                  valueComputed: (SELECT id FROM roles WHERE role_name = 'CUSTOMER')
