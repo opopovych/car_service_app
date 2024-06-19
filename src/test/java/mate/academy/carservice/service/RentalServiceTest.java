@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import mate.academy.carservice.dto.car.RentedCarDto;
 import mate.academy.carservice.dto.rental.CreateRentalRequestDto;
 import mate.academy.carservice.dto.rental.RentalDto;
 import mate.academy.carservice.dto.rental.RentalDtoWithoutCarInfo;
@@ -18,12 +17,12 @@ import mate.academy.carservice.exception.UnauthorizedAccessException;
 import mate.academy.carservice.mapper.RentalMapper;
 import mate.academy.carservice.model.Car;
 import mate.academy.carservice.model.Rental;
-import mate.academy.carservice.model.Role;
 import mate.academy.carservice.model.User;
 import mate.academy.carservice.repo.CarRepository;
 import mate.academy.carservice.repo.RentalRepository;
 import mate.academy.carservice.service.impl.RentalServiceImpl;
 import mate.academy.carservice.service.notification.NotificationService;
+import mate.academy.carservice.utility.TestRentalProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,8 +31,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 public class RentalServiceTest {
@@ -48,6 +45,9 @@ public class RentalServiceTest {
     @InjectMocks
     private RentalServiceImpl rentalServiceImpl;
 
+    @InjectMocks
+    private TestRentalProvider testRentalProvider;
+
     @Test
     @DisplayName("Verify getRentalsByUserId() method works when "
             + "userId is null, isRentalActive is true and managerUser")
@@ -55,15 +55,15 @@ public class RentalServiceTest {
         // given
         Long userId = null;
         Boolean isRentalActive = true;
-        User managerUser = createManagerUser();
+        User managerUser = testRentalProvider.createManagerUser();
 
         List<Rental> rentals = List.of(
-                createNewRental(managerUser, true),
-                createNewRental(managerUser, false)
+                testRentalProvider.createNewRental(managerUser, true),
+                testRentalProvider.createNewRental(managerUser, false)
         );
 
         List<RentalDtoWithoutCarInfo> expectedRentals = List.of(
-                createDtoWithoutCarInfo(rentals.get(0)));
+                testRentalProvider.createDtoWithoutCarInfo(rentals.get(0)));
 
         Mockito.when(rentalRepository.findAll())
                 .thenReturn(rentals);
@@ -90,18 +90,18 @@ public class RentalServiceTest {
     public void getRentalsByUserId_UserIdIsNotNull_ReturnsFilteredRentals() {
         // given
         Long userId = 2L;
-        User user1 = createUser();
+        User user1 = testRentalProvider.createUser();
         user1.setId(1L);
-        User user2 = createUser();
+        User user2 = testRentalProvider.createUser();
         user2.setId(userId);
 
         List<Rental> rentals = Arrays.asList(
-                createNewRental(user1, true),
-                createNewRental(user2, true)
+                testRentalProvider.createNewRental(user1, true),
+                testRentalProvider.createNewRental(user2, true)
         );
 
         List<RentalDtoWithoutCarInfo> expectedRentals = List.of(
-                createDtoWithoutCarInfo(rentals.get(1)));
+                testRentalProvider.createDtoWithoutCarInfo(rentals.get(1)));
 
         Mockito.when(rentalRepository.findAllByUserId(userId))
                 .thenReturn(List.of(rentals.get(1)));
@@ -128,8 +128,8 @@ public class RentalServiceTest {
         //given
         long rentalId = 1L;
 
-        User customerUser = createCustomerUser();
-        Rental rental = createNewRental(customerUser, true);
+        User customerUser = testRentalProvider.createCustomerUser();
+        Rental rental = testRentalProvider.createNewRental(customerUser, true);
         RentalDto expectedRentalDto = new RentalDto()
                 .setId(rental.getId())
                 .setRentalDate(rental.getRentalDate())
@@ -158,8 +158,8 @@ public class RentalServiceTest {
         //given
         long rentalId = 1L;
 
-        User managerUser = createManagerUser();
-        Rental rental = createNewRental(new User().setId(100L), true);
+        User managerUser = testRentalProvider.createManagerUser();
+        Rental rental = testRentalProvider.createNewRental(new User().setId(100L), true);
         RentalDto expectedRentalDto = new RentalDto()
                 .setId(rental.getId())
                 .setRentalDate(rental.getRentalDate())
@@ -189,8 +189,8 @@ public class RentalServiceTest {
         //given
         long rentalId = 1L;
 
-        User customerUser = createCustomerUser();
-        Rental rental = createNewRental(new User().setId(100L), true);
+        User customerUser = testRentalProvider.createCustomerUser();
+        Rental rental = testRentalProvider.createNewRental(new User().setId(100L), true);
 
         Mockito.when(rentalRepository.findById(rentalId)).thenReturn(Optional.of(rental));
 
@@ -216,7 +216,7 @@ public class RentalServiceTest {
         //given
         long rentalId = -1L;
 
-        User managerUser = createManagerUser();
+        User managerUser = testRentalProvider.createManagerUser();
 
         Mockito.when(rentalRepository.findById(rentalId)).thenReturn(Optional.empty());
 
@@ -242,12 +242,12 @@ public class RentalServiceTest {
         CreateRentalRequestDto createRentalRequestDto = new CreateRentalRequestDto()
                 .setCarId(1L)
                 .setNumberOfDays(7L);
-        User customerUser = createCustomerUser();
+        User customerUser = testRentalProvider.createCustomerUser();
         Car car = new Car()
                 .setId(createRentalRequestDto.getCarId())
                 .setInventory(1);
-        Rental newRental = createNewRental(customerUser, true);
-        RentalDto expectedRentalDto = createRentalDto(newRental);
+        Rental newRental = testRentalProvider.createNewRental(customerUser, true);
+        RentalDto expectedRentalDto = testRentalProvider.createRentalDto(newRental);
 
         Mockito.when(carRepository.findById(car.getId()))
                 .thenReturn(Optional.of(car));
@@ -285,7 +285,7 @@ public class RentalServiceTest {
         CreateRentalRequestDto createRentalRequestDto = new CreateRentalRequestDto()
                 .setCarId(1L)
                 .setNumberOfDays(7L);
-        User customerUser = createCustomerUser();
+        User customerUser = testRentalProvider.createCustomerUser();
         Car car = new Car()
                 .setId(createRentalRequestDto.getCarId())
                 .setInventory(0);
@@ -319,7 +319,7 @@ public class RentalServiceTest {
         CreateRentalRequestDto createRentalRequestDto = new CreateRentalRequestDto()
                 .setCarId(-1L)
                 .setNumberOfDays(7L);
-        User customerUser = createCustomerUser();
+        User customerUser = testRentalProvider.createCustomerUser();
 
         Mockito.when(carRepository.findById(createRentalRequestDto.getCarId()))
                 .thenReturn(Optional.empty());
@@ -362,7 +362,7 @@ public class RentalServiceTest {
                 .setCar(car)
                 .setUser(new User().setId(userId))
                 .setActualReturnDate(LocalDate.now());
-        RentalDto rentalDto = createRentalDto(closedRental);
+        RentalDto rentalDto = testRentalProvider.createRentalDto(closedRental);
 
         Mockito.when(rentalRepository.findRentalByIdAndUserId(rentalId, userId))
                 .thenReturn(Optional.of(activeRental));
@@ -455,58 +455,5 @@ public class RentalServiceTest {
         Mockito.verifyNoMoreInteractions(rentalRepository);
         Mockito.verifyNoInteractions(carRepository);
         Mockito.verifyNoInteractions(rentalMapper);
-    }
-
-    private Rental createNewRental(User user, Boolean isActive) {
-        return new Rental()
-                .setRentalDate(LocalDate.now())
-                .setReturnDate(LocalDate.now().plusDays(7))
-                .setActualReturnDate(isActive ? null : LocalDate.now())
-                .setUser(user);
-    }
-
-    private User createCustomerUser() {
-        User user = createUser();
-        user.getRoles().add(new Role().setRoleName(Role.RoleName.CUSTOMER));
-        return user;
-    }
-
-    private User createManagerUser() {
-        User user = createUser();
-        user.getRoles().add(new Role().setRoleName(Role.RoleName.MANAGER));
-        return user;
-    }
-
-    private User createUser() {
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String password = "Password1234$";
-
-        User user = new User();
-        user.setId(2L)
-                .setEmail("email@example.com")
-                .setPassword(passwordEncoder.encode(password))
-                .setFirstName("FirstName")
-                .setLastName("LastName")
-                .setDeleted(false);
-        return user;
-    }
-
-    private RentalDtoWithoutCarInfo createDtoWithoutCarInfo(Rental rental) {
-        return new RentalDtoWithoutCarInfo()
-                .setId(rental.getId())
-                .setUserId(rental.getUser().getId())
-                .setRentalDate(rental.getRentalDate())
-                .setReturnDate(rental.getReturnDate())
-                .setActualReturnDate(rental.getActualReturnDate());
-    }
-
-    private RentalDto createRentalDto(Rental rental) {
-        return new RentalDto()
-                .setId(1L)
-                .setRentalDate(rental.getRentalDate())
-                .setReturnDate(rental.getReturnDate())
-                .setActualReturnDate(rental.getActualReturnDate())
-                .setRentedCarDto(new RentedCarDto().setId(1L))
-                .setUserId(rental.getUser().getId());
     }
 }

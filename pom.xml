@@ -205,6 +205,13 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>src/main/java/mate/academy/carservice/CarServiceApplication.java</mainClass>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

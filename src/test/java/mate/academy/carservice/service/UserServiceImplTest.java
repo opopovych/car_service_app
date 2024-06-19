@@ -17,6 +17,7 @@ import mate.academy.carservice.model.User;
 import mate.academy.carservice.repo.RoleRepository;
 import mate.academy.carservice.repo.UserRepository;
 import mate.academy.carservice.service.impl.UserServiceImpl;
+import mate.academy.carservice.utility.TestUserProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,8 @@ public class UserServiceImplTest {
     private PasswordEncoder passwordEncoder;
     @InjectMocks
     private UserServiceImpl userServiceImpl;
+    @InjectMocks
+    private TestUserProvider testUserProvider;
 
     @Test
     @DisplayName("Verify register() method works")
@@ -49,7 +52,7 @@ public class UserServiceImplTest {
             throws RegistrationException {
         //given
         String email = "email@example.com";
-        User user = createUser(email);
+        User user = testUserProvider.createUser(email);
         Role role = new Role().setRoleName(Role.RoleName.CUSTOMER);
         user.getRoles().add(role);
 
@@ -102,7 +105,7 @@ public class UserServiceImplTest {
     public void getUserInfo_ValidEmail_ReturnsGetUserInfoResponseDto() {
         //given
         String email = "email@example.com";
-        User user = createUser(email);
+        User user = testUserProvider.createUser(email);
         GetProfileInfoDto expectedUserInfo = new GetProfileInfoDto()
                 .setId(user.getId())
                 .setEmail(user.getEmail())
@@ -152,7 +155,7 @@ public class UserServiceImplTest {
     public void updateUserInfo_ValidEmailAndRequest_ReturnsNewUserInfoDto() {
         //given
         String email = "email@example.com";
-        User user = createUser(email);
+        User user = testUserProvider.createUser(email);
 
         UserRegisterRequestDto requestDto = new UserRegisterRequestDto()
                 .setFirstName("NewFirstName")
@@ -202,7 +205,7 @@ public class UserServiceImplTest {
     public void updateRole_ValidUserIdAndDto_Works() {
         //given
         String email = "email@example.com";
-        User user = createUser(email);
+        User user = testUserProvider.createUser(email);
         long userId = user.getId();
 
         UpdateRoleRequestDto requestDto = new UpdateRoleRequestDto()
@@ -270,15 +273,5 @@ public class UserServiceImplTest {
         Mockito.verify(userRepository, times(1)).deleteById(userId);
         Mockito.verifyNoMoreInteractions(userRepository);
         Mockito.verifyNoInteractions(userMapper);
-    }
-
-    private User createUser(String email) {
-        return new User()
-                .setId(2L)
-                .setEmail(email)
-                .setPassword(PASSWORD_ENCODER.encode(PASSWORD))
-                .setFirstName("FirstName")
-                .setLastName("LastName")
-                .setDeleted(false);
     }
 }
