@@ -21,7 +21,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Log4j2
 public class TelegramNotificationService extends TelegramLongPollingBot
         implements NotificationService {
-    private static final long CHAT_ID = 920802540L;
+    private static final long CHAT_ID = 585786382L;
     private final RentalRepository rentalRepository;
     private final RentalMapper rentalMapper;
     private final CarMapper carMapper;

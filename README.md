@@ -119,3 +119,12 @@ This is the back-end part of the application, developed in Java.
 - All users registered through the common available endpoint POST: /auth/registration will have the default role USER.
 13. Tests were written using Testcontainers for repository-level, Mockito for service-level, and MockMvc for controller-level.
 14. Finally, Docker was integrated for easy application deployment (for access to private information such as JWT_SECRET and BOT_TOKEN, please contact me at bohdan.sosunovych@gmail.com).
+
+### HOW TO RUN APP
+- Clone this project from GitHub
+- Install Postman for sending requests
+- Create an empty database using a local installation of MySQL
+- Open the project in your preferred Integrated Development Environment. Locate the application.properties and liquibase.properties in the project. It should contain the database connection settings. Enter the appropriate values in the appropriate fields.
+- Configure the Stripe API (read below how)
+- Configure Docker (read below how)
+- Run project by running the command "docker-compose up"!
