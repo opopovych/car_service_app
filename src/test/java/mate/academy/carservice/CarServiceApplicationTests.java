@@ -1,13 +1,13 @@
-package mate.academy.car_service_app;
+package mate.academy.carservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class CarServiceAppApplicationTests {
+class CarServiceApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }

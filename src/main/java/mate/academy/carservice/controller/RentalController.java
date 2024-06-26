@@ -1,0 +1,78 @@
+package mate.academy.carservice.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import mate.academy.carservice.dto.rental.CreateRentalRequestDto;
+import mate.academy.carservice.dto.rental.RentalDto;
+import mate.academy.carservice.dto.rental.RentalDtoWithoutCarInfo;
+import mate.academy.carservice.model.User;
+import mate.academy.carservice.service.RentalService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@Tag(name = "Rental management", description = "Endpoints for managing rentals")
+@SecurityRequirement(name = "bearerAuth")
+@RestController
+@RequestMapping("/rentals")
+@RequiredArgsConstructor
+public class RentalController {
+    private final RentalService rentalService;
+    private final UserDetailsService userDetailsService;
+
+    @GetMapping
+    @Operation(summary = "Get rentals by user id",
+            description = "Get rentals by user id")
+    public List<RentalDtoWithoutCarInfo> getRentalsByUserId(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Boolean isActive,
+            Authentication authentication) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(authentication.getName());
+        User user = (User) userDetails;
+        return rentalService.getRentalsByUserId(userId, isActive, user);
+    }
+
+    @GetMapping("/{rentalId}")
+    @Operation(summary = "Get a rental by id",
+            description = "Get a rental by id")
+    public RentalDto getRentalById(@PathVariable Long rentalId,
+                                   Authentication authentication) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(authentication.getName());
+        User user = (User) userDetails;
+        return rentalService.getRentalById(rentalId, user);
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @Operation(summary = "Create a new rental",
+            description = "Create a new rental")
+    public RentalDto createRental(@RequestBody @Valid CreateRentalRequestDto requestDto,
+                                  Authentication authentication) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(authentication.getName());
+        User user = (User) userDetails;
+        return rentalService.createRental(requestDto, user);
+    }
+
+    @PostMapping("/{rentalId}/return")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @Operation(summary = "Set an actual return date for a rental",
+            description = "Set an actual return date for a rental")
+    public RentalDto setActualReturnDate(@PathVariable Long rentalId,
+                                         Authentication authentication) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(authentication.getName());
+        User user = (User) userDetails;
+        return rentalService.setActualReturnDate(rentalId, user.getId());
+    }
+}
